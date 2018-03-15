@@ -77,21 +77,21 @@ namespace LiteCQRS
         void Handle(T e);
     }
 
-    public interface IMediator
+    public interface IDispatcher
     {
         CommandResult ExecuteCommand<TCommand>(TCommand command) where TCommand : ICommand;
         void Publish<TEvent>(TEvent e) where TEvent : IEvent;
-        TResult ExecuteQuery<TResult, TQuery>(TQuery query)
+        TResult ExecuteQuery<TQuery, TResult>(TQuery query)
             where TResult : IQueryResult
             where TQuery : IQuery;
 
     }
 
-    public class Mediator : IMediator
+    public class Dispatcher : IDispatcher
     {
         private readonly IContainer _container;
 
-        public Mediator(IContainer container)
+        public Dispatcher(IContainer container)
         {
             _container = container;
         }
@@ -131,7 +131,7 @@ namespace LiteCQRS
             }
         }
 
-        public TResult ExecuteQuery<TResult, TQuery>(TQuery query)
+        public TResult ExecuteQuery<TQuery, TResult>(TQuery query)
             where TResult : IQueryResult
             where TQuery : IQuery
         {

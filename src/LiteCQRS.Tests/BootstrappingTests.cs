@@ -51,11 +51,11 @@ namespace LiteCQRS.Tests
 
     public class GreetingsCommandHandler : LiteCQRS.ICommandHandler<GreetingsCommand>
     {
-        private IMediator _mediator;
+        private readonly IDispatcher _dispatcher;
 
-        public GreetingsCommandHandler(IMediator mediator)
+        public GreetingsCommandHandler(IDispatcher mediator)
         {
-            _mediator = mediator;
+            _dispatcher = mediator;
         }
 
         public CommandResult Execute(GreetingsCommand command)
@@ -65,7 +65,7 @@ namespace LiteCQRS.Tests
             {
                 OperationSuccesful = true
             };
-            _mediator.Publish(new GreetingExecutedEvent() { What = "Everything is awesome!", Who = "Emmet" });
+            _dispatcher.Publish(new GreetingExecutedEvent() { What = "Everything is awesome!", Who = "Emmet" });
             return result;
         }
     }
@@ -89,28 +89,37 @@ namespace LiteCQRS.Tests
     [TestClass]
     public class BootstrappingTests
     {
-        [TestMethod]
-        public void InvocationTest()
+        private IContainer _container;
+        public BootstrappingTests()
         {
-            var container = new Container(_ =>
+            _container = new Container(_ =>
             {
                 _.Scan(x =>
                 {
                     x.TheCallingAssembly();
-                    x.AssemblyContainingType<LiteCQRS.IMediator>();
+                    x.AssemblyContainingType<LiteCQRS.IDispatcher>();
                     x.ConnectImplementationsToTypesClosing(typeof(LiteCQRS.ICommandHandler<>));
                     x.ConnectImplementationsToTypesClosing(typeof(LiteCQRS.IQueryHandler<,>));
                     x.ConnectImplementationsToTypesClosing(typeof(LiteCQRS.IEventHandler<>));
                     x.WithDefaultConventions();
                 });
+
+                //_.For(typeof(LiteCQRS.ICommandHandler<>)).DecorateAllWith()
             });
+        }
 
-            var mediator = container.GetInstance<IMediator>();
+        [TestMethod]
+        public void InvocationTest()
+        {
+            var dispatcher = _container.GetInstance<IDispatcher>();
 
-            var result = mediator.ExecuteCommand<GreetingsCommand>(new GreetingsCommand() { Name = "Hola" });
-            var queryResult = mediator.ExecuteQuery<EmployeeResult, GetEmployeesQuery>(new GetEmployeesQuery() {Name = "Javier"});
+            var result = dispatcher.ExecuteCommand<GreetingsCommand>(new GreetingsCommand() { Name = "Hola" });
+            var queryResult = dispatcher.ExecuteQuery<GetEmployeesQuery, EmployeeResult>(new GetEmployeesQuery() { Name = "Javier" });
 
             Assert.IsTrue(result.OperationSuccesful == true);
+            Assert.IsTrue(queryResult.Employees.Count > 1);
+
+            //decorator and the pipeline.
         }
     }
 }
