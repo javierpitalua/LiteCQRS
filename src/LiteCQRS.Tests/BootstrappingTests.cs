@@ -9,7 +9,6 @@ namespace LiteCQRS.Tests
     public class GetEmployeesQuery : IQuery
     {
         public string Name { get; set; }
-
     }
 
     public class EmployeeItem
@@ -38,9 +37,14 @@ namespace LiteCQRS.Tests
         }
     }
 
-    public class GreetingsCommand : LiteCQRS.ICommand
+    public class GreetingsCommand : LiteCQRS.ICommand, IValidatable
     {
         public string Name { get; set; }
+
+        public ValidationResult Validate()
+        {
+            return new ValidationResult();
+        }
     }
 
     public class GreetingExecutedEvent : IEvent
@@ -86,6 +90,29 @@ namespace LiteCQRS.Tests
         }
     }
 
+    public interface IValidatable
+    {
+        ValidationResult Validate();
+    }
+
+    public class ValidationDecorator<T> : ICommandHandler<T> where T : ICommand
+    {
+        private readonly ICommandHandler<T> _inner;
+
+        public ValidationDecorator(ICommandHandler<T> inner)
+        {
+            _inner = inner;
+        }
+
+        public CommandResult Execute(T command)
+        {
+            if (!(command is IValidatable validatable)) return _inner.Execute(command);
+            Console.WriteLine("ValidateFirst");
+            validatable.Validate();
+            return _inner.Execute(command);
+        }
+    }
+
     [TestClass]
     public class BootstrappingTests
     {
@@ -102,9 +129,10 @@ namespace LiteCQRS.Tests
                     x.ConnectImplementationsToTypesClosing(typeof(LiteCQRS.IQueryHandler<,>));
                     x.ConnectImplementationsToTypesClosing(typeof(LiteCQRS.IEventHandler<>));
                     x.WithDefaultConventions();
+                    x.Exclude(type => type == typeof(ValidationDecorator<>));
                 });
 
-                //_.For(typeof(LiteCQRS.ICommandHandler<>)).DecorateAllWith()
+                _.For(typeof(ICommandHandler<>)).DecorateAllWith(typeof(ValidationDecorator<>));
             });
         }
 
@@ -113,13 +141,11 @@ namespace LiteCQRS.Tests
         {
             var dispatcher = _container.GetInstance<IDispatcher>();
 
-            var result = dispatcher.ExecuteCommand<GreetingsCommand>(new GreetingsCommand() { Name = "Hola" });
+            var result = dispatcher.Execute<GreetingsCommand>(new GreetingsCommand() { Name = "Hola" });
             var queryResult = dispatcher.ExecuteQuery<GetEmployeesQuery, EmployeeResult>(new GetEmployeesQuery() { Name = "Javier" });
 
             Assert.IsTrue(result.OperationSuccesful == true);
             Assert.IsTrue(queryResult.Employees.Count > 1);
-
-            //decorator and the pipeline.
         }
     }
 }
