@@ -4,10 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>Javier Pitalua Cobos</Authors>
     <Company>Helius Consulting</Company>
-    <Product>LiteCQRS</Product>
-    <Description>A small framework to help with CQRS implementation.</Description>
+    <Description>Small library for implementing the CQRS pattern</Description>
     <PackageProjectUrl>https://github.com/javierpitalua/LiteCQRS</PackageProjectUrl>
-    <PackageId>IgniteCQRS</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
