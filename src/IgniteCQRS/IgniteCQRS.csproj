@@ -6,6 +6,7 @@
     <Company>Helius Consulting</Company>
     <Description>Small library for implementing the CQRS pattern</Description>
     <PackageProjectUrl>https://github.com/javierpitalua/LiteCQRS</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/javierpitalua/LiteCQRS/master/src/IgniteCQRS/g866-1.png</PackageIconUrl>
   </PropertyGroup>
 
   <ItemGroup>
