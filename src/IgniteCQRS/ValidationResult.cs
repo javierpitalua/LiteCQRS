@@ -6,6 +6,7 @@ namespace IgniteCQRS
     {
         public string PropertyName { get; set; }
         public string ErrorDescription { get; set; }
+        public string ErrorCode { get; set; }
     }
 
     public class ValidationResult

@@ -1,4 +1,6 @@
-﻿namespace IgniteCQRS
+﻿using System.Threading.Tasks;
+
+namespace IgniteCQRS
 {
     public interface IQuery
     {
@@ -10,10 +12,10 @@
 
     }
 
-    public interface IQueryHandler<in TQuery, out TResult>
+    public interface IQueryHandler<in TQuery, TResult>
         where TQuery : IQuery
         where TResult : IQueryResult
     {
-        TResult ExecuteQuery(TQuery query);
+        Task<TResult> ExecuteQueryAsync(TQuery query);
     }
 }

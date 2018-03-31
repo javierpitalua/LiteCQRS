@@ -1,4 +1,6 @@
-﻿namespace IgniteCQRS
+﻿using System.Threading.Tasks;
+
+namespace IgniteCQRS
 {
     public interface ICommand
     {
@@ -7,6 +9,6 @@
 
     public interface ICommandHandler<in TCommand> where TCommand : ICommand
     {
-        CommandResult Execute(TCommand command);
+        Task<CommandResult> ExecuteAsync(TCommand command);
     }
 }

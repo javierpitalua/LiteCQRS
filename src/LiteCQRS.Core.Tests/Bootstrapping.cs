@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using IgniteCQRS;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StructureMap;
@@ -27,16 +28,16 @@ namespace LiteCQRS.Core.Tests
 
         public class GetEmployeesQueryHandler : IQueryHandler<GetEmployeesQuery, EmployeeResult>
         {
-            public EmployeeResult ExecuteQuery(GetEmployeesQuery query)
+            public Task<EmployeeResult> ExecuteQueryAsync(GetEmployeesQuery query)
             {
-                return new EmployeeResult()
+                return Task.FromResult<EmployeeResult>(new EmployeeResult()
                 {
                     Employees = new List<EmployeeItem>()
                     {
                         new EmployeeItem() { Name = "Pedro", Email = "pedro@now.com" },
                         new EmployeeItem() { Name = "Javier", Email = "javier@yes.com" }
                     }
-                };
+                });
             }
         }
 
@@ -65,31 +66,37 @@ namespace LiteCQRS.Core.Tests
                 _dispatcher = mediator;
             }
 
-            public CommandResult Execute(GreetingsCommand command)
+            public Task<CommandResult> ExecuteAsync(GreetingsCommand command)
             {
                 Console.WriteLine("Hola");
                 var result = new CommandResult()
                 {
                     OperationSuccesful = true
                 };
-                _dispatcher.Publish(new GreetingExecutedEvent() { What = "Everything is awesome!", Who = "Emmet" });
-                return result;
+                _dispatcher.PublishAsync(new GreetingExecutedEvent() { What = "Everything is awesome!", Who = "Emmet" });
+                return Task.FromResult<CommandResult>(result);
             }
         }
 
         public class EventHandler1 : IEventHandler<GreetingExecutedEvent>
         {
-            public void Handle(GreetingExecutedEvent e)
+            Task IEventHandler<GreetingExecutedEvent>.Handle(GreetingExecutedEvent e)
             {
-                Console.WriteLine("Greetings from handler 1: {0} says {1}", e.Who, e.What);
+                return Task.Run(() =>
+                {
+                    Console.WriteLine("Hello rom handler 1");
+                });
             }
         }
 
         public class EventHandler2 : IEventHandler<GreetingExecutedEvent>
         {
-            public void Handle(GreetingExecutedEvent e)
+            Task IEventHandler<GreetingExecutedEvent>.Handle(GreetingExecutedEvent e)
             {
-                Console.WriteLine("Greetings from handler 2: {0} says {1}", e.Who, e.What);
+                return Task.Run(() =>
+                {
+                    Console.WriteLine("Greetings from handler 2: {0} says {1}", e.Who, e.What);
+                });
             }
         }
 
@@ -107,12 +114,12 @@ namespace LiteCQRS.Core.Tests
                 _inner = inner;
             }
 
-            public CommandResult Execute(T command)
+            public Task<CommandResult> ExecuteAsync(T command)
             {
-                if (!(command is IValidatable validatable)) return _inner.Execute(command);
+                if (!(command is IValidatable validatable)) return _inner.ExecuteAsync(command);
                 Console.WriteLine("ValidateFirst");
                 validatable.Validate();
-                return _inner.Execute(command);
+                return _inner.ExecuteAsync(command);
             }
         }
 
@@ -126,7 +133,7 @@ namespace LiteCQRS.Core.Tests
                 {
                     x.TheCallingAssembly();
                     x.AssemblyContainingType<IDispatcher>();
-                    x.Assembly("LiteCQRS.Core.Tests");  
+                    x.Assembly("LiteCQRS.Core.Tests");
                     x.ConnectImplementationsToTypesClosing(typeof(ICommandHandler<>));
                     x.ConnectImplementationsToTypesClosing(typeof(IQueryHandler<,>));
                     x.ConnectImplementationsToTypesClosing(typeof(IEventHandler<>));
@@ -139,12 +146,12 @@ namespace LiteCQRS.Core.Tests
         }
 
         [TestMethod]
-        public void BootstrappingTest()
+        public async Task BootstrappingTest()
         {
             var dispatcher = _container.GetInstance<IDispatcher>();
 
-            var result = dispatcher.Execute<GreetingsCommand>(new GreetingsCommand() { Name = "Hola" });
-            var queryResult = dispatcher.ExecuteQuery<GetEmployeesQuery, EmployeeResult>(new GetEmployeesQuery() { Name = "Javier" });
+            var result = await dispatcher.ExecuteAsync<GreetingsCommand>(new GreetingsCommand() { Name = "Hola" });
+            var queryResult = await dispatcher.ExecuteQueryAsync<GetEmployeesQuery, EmployeeResult>(new GetEmployeesQuery() { Name = "Javier" });
 
             Assert.IsTrue(result.OperationSuccesful == true);
             Assert.IsTrue(queryResult.Employees.Count > 1);

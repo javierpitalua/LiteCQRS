@@ -1,4 +1,6 @@
-﻿namespace IgniteCQRS
+﻿using System.Threading.Tasks;
+
+namespace IgniteCQRS
 {
     public interface IDispatcher
     {
@@ -8,15 +10,15 @@
         /// <typeparam name="TCommand"></typeparam>
         /// <param name="command"></param>
         /// <returns></returns>
-        CommandResult Execute<TCommand>(TCommand command) where TCommand : ICommand;
+        Task<CommandResult> ExecuteAsync<TCommand>(TCommand command) where TCommand : ICommand;
 
         /// <summary>
         /// Notifies an event to all suscribers
         /// </summary>
         /// <typeparam name="TEvent"></typeparam>
         /// <param name="e"></param>
-        void Publish<TEvent>(TEvent e) where TEvent : IEvent;
-
+        void PublishAsync<TEvent>(TEvent e) where TEvent : IEvent;
+        
         /// <summary>
         /// Given a query, it resolves to the respective query handler and executes the handle method to return the result.
         /// </summary>
@@ -24,9 +26,8 @@
         /// <typeparam name="TResult"></typeparam>
         /// <param name="query"></param>
         /// <returns></returns>
-        TResult ExecuteQuery<TQuery, TResult>(TQuery query)
+        Task<TResult> ExecuteQueryAsync<TQuery, TResult>(TQuery query)
             where TResult : IQueryResult
             where TQuery : IQuery;
-
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using StructureMap;
 
 namespace IgniteCQRS
@@ -12,8 +13,8 @@ namespace IgniteCQRS
         {
             _container = container;
         }
-
-        public CommandResult Execute<TCommand>(TCommand command) where TCommand : ICommand
+        
+        public Task<CommandResult> ExecuteAsync<TCommand>(TCommand command) where TCommand : ICommand
         {
             ICommandHandler<TCommand> resolvedHandler = null;
             var allResolvedHandlers = _container.GetAllInstances<ICommandHandler<TCommand>>();
@@ -35,22 +36,20 @@ namespace IgniteCQRS
                 }
             }
 
-            return resolvedHandler?.Execute(command);
+            return resolvedHandler?.ExecuteAsync(command);
         }
 
-        public void Publish<TEvent>(TEvent e) where TEvent : IEvent
+        public async void PublishAsync<TEvent>(TEvent e) where TEvent : IEvent
         {
             var resolvedEventHandlers = _container.GetAllInstances<IEventHandler<TEvent>>();
             foreach (var handler in resolvedEventHandlers)
             {
                 Console.WriteLine("Event notified to type:{0}", handler.GetType());
-                handler.Handle(e);
+                await handler.Handle(e);
             }
         }
 
-        public TResult ExecuteQuery<TQuery, TResult>(TQuery query)
-            where TResult : IQueryResult
-            where TQuery : IQuery
+        public Task<TResult> ExecuteQueryAsync<TQuery, TResult>(TQuery query) where TQuery : IQuery where TResult : IQueryResult
         {
             IQueryHandler<TQuery, TResult> handler = null;
             var resolvedHandlers = _container.GetAllInstances<IQueryHandler<TQuery, TResult>>();
@@ -67,7 +66,7 @@ namespace IgniteCQRS
             }
 
             handler = queryHandlers.First();
-            return handler.ExecuteQuery(query);
+            return handler.ExecuteQueryAsync(query);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace IgniteCQRS
+﻿using System.Threading.Tasks;
+
+namespace IgniteCQRS
 {
     public interface IEvent
     {
@@ -7,6 +9,6 @@
 
     public interface IEventHandler<in T> where T : IEvent
     {
-        void Handle(T e);
+        Task Handle(T e);
     }
 }
