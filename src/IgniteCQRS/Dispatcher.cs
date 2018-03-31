@@ -39,7 +39,7 @@ namespace IgniteCQRS
             return resolvedHandler?.ExecuteAsync(command);
         }
 
-        public async void PublishAsync<TEvent>(TEvent e) where TEvent : IEvent
+        public async Task PublishAsync<TEvent>(TEvent e) where TEvent : IEvent
         {
             var resolvedEventHandlers = _container.GetAllInstances<IEventHandler<TEvent>>();
             foreach (var handler in resolvedEventHandlers)

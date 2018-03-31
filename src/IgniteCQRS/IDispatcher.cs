@@ -17,7 +17,7 @@ namespace IgniteCQRS
         /// </summary>
         /// <typeparam name="TEvent"></typeparam>
         /// <param name="e"></param>
-        void PublishAsync<TEvent>(TEvent e) where TEvent : IEvent;
+        Task PublishAsync<TEvent>(TEvent e) where TEvent : IEvent;
         
         /// <summary>
         /// Given a query, it resolves to the respective query handler and executes the handle method to return the result.
