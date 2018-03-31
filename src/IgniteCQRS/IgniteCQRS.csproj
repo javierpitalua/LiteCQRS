@@ -7,6 +7,10 @@
     <Description>Small library for implementing the CQRS pattern</Description>
     <PackageProjectUrl>https://github.com/javierpitalua/LiteCQRS</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/javierpitalua/LiteCQRS/master/src/IgniteCQRS/g866-1.png</PackageIconUrl>
+    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.0.1</AssemblyVersion>
+    <FileVersion>1.0.0.1</FileVersion>
+    <NeutralLanguage></NeutralLanguage>
   </PropertyGroup>
 
   <ItemGroup>
